@@ -9,7 +9,7 @@
 ## 技術スタック
 
 - **フレームワーク**: React + Vite + TypeScript
-- **スタイル**: Tailwind CSS + shadcn/ui
+- **スタイル**: Tailwind CSS v4（`@tailwindcss/vite` プラグイン経由）
 - **可視化**: カスタム SVG（外部チャートライブラリは使わない）
 - **コンテナ**: マルチステージ Dockerfile → nginx:alpine
 - **バックエンド**: なし（すべてクライアントサイドで完結）
@@ -21,6 +21,7 @@ ownhypecycle/
 ├── CLAUDE.md
 ├── README.md
 ├── Dockerfile
+├── .dockerignore
 ├── docs/
 │   ├── requirements.md
 │   └── design-notes.md
@@ -28,12 +29,20 @@ ownhypecycle/
     ├── main.tsx
     ├── App.tsx
     ├── components/
-    │   ├── HypeCycleChart/    # SVGチャート本体
-    │   ├── DataTable/         # キーワード管理テーブル
-    │   └── ui/                # shadcn/ui の共通コンポーネント
-    ├── hooks/                 # カスタムフック
-    ├── types/                 # TypeScript 型定義
-    └── utils/                 # 曲線計算・CSV/JSON変換など
+    │   ├── HypeCycleChart/       # SVGチャート本体
+    │   │   ├── index.tsx         #   チャート全体
+    │   │   ├── EntryLabel.tsx    #   ドラッグ可能なキーワードラベル
+    │   │   ├── Legend.tsx        #   実現時期の凡例（右上）
+    │   │   └── TimeToAdoptionIcon.tsx  # 実現時期アイコン（SVG）
+    │   ├── DataTable/            # キーワード管理テーブル
+    │   │   └── index.tsx
+    │   └── TableToolbar.tsx      # 行追加・インポート・エクスポートボタン
+    ├── types/                    # TypeScript 型定義
+    │   └── index.ts
+    └── utils/                    # 曲線計算・レイアウト・CSV/JSON変換
+        ├── curve.ts
+        ├── labelLayout.ts
+        └── io.ts
 ```
 
 ## コーディングルール
@@ -45,9 +54,10 @@ ownhypecycle/
 - コメントは WHY が非自明な場合のみ書く（WHAT は書かない）
 
 ### SVG / チャート
-- SVG の座標系は viewBox="0 0 1000 500" を基準とする
+- SVG の座標系は `viewBox="0 0 1000 500"` を基準とする
 - 曲線の制御点・フェーズ区間は `src/utils/curve.ts` に集約する
-- ドラッグ処理は SVG の `onMouseMove` / `onMouseUp` で実装する（ドラッグライブラリは使わない）
+- ドラッグ処理は SVG 要素の `onMouseDown` → `window` の `mousemove` / `mouseup` で実装する（ドラッグライブラリは使わない）
+- 実現時期アイコンは曲線上に直接配置する（ラベルは原則アイコンの横）
 
 ### データ
 - エントリの `position` はフェーズ内 [0, 1] の相対値（グローバル X 座標ではない）
