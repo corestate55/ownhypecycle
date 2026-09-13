@@ -1,8 +1,8 @@
+import { useRef, useState } from 'react'
 import type { Entry } from '../../types'
 import type { LabelPosition } from '../../utils/labelLayout'
 import { STAGE_X_RANGES, xToStagePosition } from '../../utils/curve'
 import { TimeToAdoptionIcon } from './TimeToAdoptionIcon'
-import { useRef } from 'react'
 
 interface Props {
   entry: Entry
@@ -12,11 +12,12 @@ interface Props {
 }
 
 const ICON_SIZE = 12
-// Plateau entries get text on the left side to avoid going off the right edge
 const PLATEAU_STAGE = 'plateau_of_productivity'
 
 export function EntryLabel({ entry, labelPos, svgRef, onPositionChange }: Props) {
-  const dragging = useRef(false)
+  const draggingRef = useRef(false)
+  const [hovered, setHovered] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
 
   function getSVGX(clientX: number): number {
     const svg = svgRef.current
@@ -28,18 +29,20 @@ export function EntryLabel({ entry, labelPos, svgRef, onPositionChange }: Props)
 
   function handleMouseDown(e: React.MouseEvent) {
     e.preventDefault()
-    dragging.current = true
+    draggingRef.current = true
+    setIsDragging(true)
     const [xStart, xEnd] = STAGE_X_RANGES[entry.stage]
 
     const onMove = (me: MouseEvent) => {
-      if (!dragging.current) return
+      if (!draggingRef.current) return
       const rawX = getSVGX(me.clientX)
       const clampedX = Math.max(xStart, Math.min(xEnd, rawX))
       onPositionChange(entry.id, xToStagePosition(entry.stage, clampedX))
     }
 
     const onUp = () => {
-      dragging.current = false
+      draggingRef.current = false
+      setIsDragging(false)
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
     }
@@ -50,39 +53,51 @@ export function EntryLabel({ entry, labelPos, svgRef, onPositionChange }: Props)
 
   const { cx, cy, ly, displaced } = labelPos
   const isPlateauStage = entry.stage === PLATEAU_STAGE
-  // Text position relative to icon
-  const textX = isPlateauStage
-    ? cx - ICON_SIZE / 2 - 4
-    : cx + ICON_SIZE / 2 + 4
+  const textX = isPlateauStage ? cx - ICON_SIZE / 2 - 4 : cx + ICON_SIZE / 2 + 4
   const textAnchor = isPlateauStage ? 'end' : 'start'
+  const cursor = isDragging ? 'grabbing' : hovered ? 'grab' : 'default'
 
   return (
-    <g style={{ cursor: 'grab' }} onMouseDown={handleMouseDown}>
-      {/* Spike line: only when label is displaced from the curve */}
+    <g
+      style={{ cursor }}
+      onMouseDown={handleMouseDown}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Spike line: only when label is displaced */}
       {displaced && (
         <line
-          x1={cx} y1={cy}
-          x2={cx} y2={ly}
-          stroke="#bbb"
-          strokeWidth={0.8}
-          strokeDasharray="3,2"
+          x1={cx} y1={cy} x2={cx} y2={ly}
+          stroke="#bbb" strokeWidth={0.8} strokeDasharray="3,2"
           pointerEvents="none"
         />
       )}
 
-      {/* Time-to-adoption icon placed ON the curve */}
+      {/* Hover highlight ring — rendered before icon so it appears behind */}
+      {hovered && (
+        <circle
+          cx={cx} cy={cy}
+          r={ICON_SIZE / 2 + 5}
+          fill="#f0f4ff"
+          stroke="#93c5fd"
+          strokeWidth={1}
+          pointerEvents="none"
+        />
+      )}
+
+      {/* Time-to-adoption icon on the curve */}
       <g transform={`translate(${cx}, ${cy})`}>
         <TimeToAdoptionIcon type={entry.timeToAdoption} size={ICON_SIZE} />
       </g>
 
-      {/* Keyword label — next to icon (on curve) or at displaced y */}
+      {/* Keyword label — interactive: receives pointer events for dragging */}
       <text
         x={textX}
         y={ly + 4}
         fontSize={12}
         textAnchor={textAnchor}
-        fill="#1a1a1a"
-        pointerEvents="none"
+        fill={hovered ? '#111827' : '#374151'}
+        fontWeight={hovered ? '600' : '400'}
         style={{ userSelect: 'none' }}
       >
         {entry.keyword}
