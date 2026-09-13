@@ -64,7 +64,7 @@ export function HypeCycleChart({ entries, onPositionChange, svgRef }: Props) {
             <rect
               x={xStart} y={CHART_TOP}
               width={xEnd - xStart} height={AXIS_Y - CHART_TOP}
-              fill={stage === 'plateau_of_productivity' ? '#f0f9f0' : 'transparent'}
+              fill="transparent"
             />
             <text
               x={labelX} y={AXIS_Y - 6}

@@ -56,17 +56,10 @@ export function DataTable({ entries, onUpdate, onDelete }: Props) {
                   <input
                     autoFocus
                     className="w-full outline-none border-b border-blue-400"
-                    defaultValue={entry.keyword}
-                    onBlur={(e) => {
-                      onUpdate(entry.id, 'keyword', e.target.value)
-                      commitEdit(e)
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        onUpdate(entry.id, 'keyword', e.currentTarget.value)
-                        commitEdit(e)
-                      }
-                    }}
+                    value={entry.keyword}
+                    onChange={(e) => onUpdate(entry.id, 'keyword', e.target.value)}
+                    onBlur={() => setEditing(null)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') setEditing(null) }}
                   />
                 ) : (
                   <span>{entry.keyword || <span className="text-gray-400 italic">クリックして入力</span>}</span>

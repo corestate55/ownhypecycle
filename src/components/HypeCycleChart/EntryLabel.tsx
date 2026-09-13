@@ -1,6 +1,6 @@
 import type { Entry } from '../../types'
 import type { LabelPosition } from '../../utils/labelLayout'
-import { STAGE_X_RANGES, stagePositionToX, xToStagePosition } from '../../utils/curve'
+import { STAGE_X_RANGES, xToStagePosition } from '../../utils/curve'
 import { TimeToAdoptionIcon } from './TimeToAdoptionIcon'
 import { useRef } from 'react'
 
@@ -10,6 +10,10 @@ interface Props {
   svgRef: React.RefObject<SVGSVGElement | null>
   onPositionChange: (id: string, position: number) => void
 }
+
+const ICON_SIZE = 12
+// Plateau entries get text on the left side to avoid going off the right edge
+const PLATEAU_STAGE = 'plateau_of_productivity'
 
 export function EntryLabel({ entry, labelPos, svgRef, onPositionChange }: Props) {
   const dragging = useRef(false)
@@ -25,15 +29,13 @@ export function EntryLabel({ entry, labelPos, svgRef, onPositionChange }: Props)
   function handleMouseDown(e: React.MouseEvent) {
     e.preventDefault()
     dragging.current = true
-
     const [xStart, xEnd] = STAGE_X_RANGES[entry.stage]
 
     const onMove = (me: MouseEvent) => {
       if (!dragging.current) return
       const rawX = getSVGX(me.clientX)
       const clampedX = Math.max(xStart, Math.min(xEnd, rawX))
-      const newPosition = xToStagePosition(entry.stage, clampedX)
-      onPositionChange(entry.id, newPosition)
+      onPositionChange(entry.id, xToStagePosition(entry.stage, clampedX))
     }
 
     const onUp = () => {
@@ -46,39 +48,36 @@ export function EntryLabel({ entry, labelPos, svgRef, onPositionChange }: Props)
     window.addEventListener('mouseup', onUp)
   }
 
-  const { cx, cy, lx, ly } = labelPos
-  const iconSize = 10
-  const textX = lx + iconSize + 3
-
-  // Determine text anchor based on position in chart
-  const anchorX = stagePositionToX(entry.stage, entry.position)
-  const textAnchor = anchorX > 800 ? 'end' : 'start'
-  const adjustedLx = textAnchor === 'end' ? lx - iconSize - 3 : lx
+  const { cx, cy, ly, displaced } = labelPos
+  const isPlateauStage = entry.stage === PLATEAU_STAGE
+  // Text position relative to icon
+  const textX = isPlateauStage
+    ? cx - ICON_SIZE / 2 - 4
+    : cx + ICON_SIZE / 2 + 4
+  const textAnchor = isPlateauStage ? 'end' : 'start'
 
   return (
-    <g
-      style={{ cursor: 'grab' }}
-      onMouseDown={handleMouseDown}
-    >
-      {/* Spike line from label to curve point */}
-      <line
-        x1={cx} y1={cy}
-        x2={textAnchor === 'end' ? adjustedLx : lx}
-        y2={ly}
-        stroke="#999"
-        strokeWidth={0.8}
-        strokeDasharray="2,2"
-        pointerEvents="none"
-      />
-      {/* Dot on curve */}
-      <circle cx={cx} cy={cy} r={3} fill="#555" pointerEvents="none" />
-      {/* Icon */}
-      <g transform={`translate(${textAnchor === 'end' ? adjustedLx - iconSize / 2 : lx + iconSize / 2}, ${ly})`}>
-        <TimeToAdoptionIcon type={entry.timeToAdoption} size={iconSize} />
+    <g style={{ cursor: 'grab' }} onMouseDown={handleMouseDown}>
+      {/* Spike line: only when label is displaced from the curve */}
+      {displaced && (
+        <line
+          x1={cx} y1={cy}
+          x2={cx} y2={ly}
+          stroke="#bbb"
+          strokeWidth={0.8}
+          strokeDasharray="3,2"
+          pointerEvents="none"
+        />
+      )}
+
+      {/* Time-to-adoption icon placed ON the curve */}
+      <g transform={`translate(${cx}, ${cy})`}>
+        <TimeToAdoptionIcon type={entry.timeToAdoption} size={ICON_SIZE} />
       </g>
-      {/* Label text */}
+
+      {/* Keyword label — next to icon (on curve) or at displaced y */}
       <text
-        x={textAnchor === 'end' ? adjustedLx - iconSize - 3 : textX}
+        x={textX}
         y={ly + 4}
         fontSize={12}
         textAnchor={textAnchor}
