@@ -5,12 +5,13 @@
 **フェーズ**: 初期実装完了
 
 実装済み機能:
-- ハイプサイクル曲線（ベジェ近似）
+- ハイプサイクル曲線（ベジェ近似・なめらかな形状、ピーク位置をピーク期中央に配置）
 - フェーズ区切り・ラベル
 - 実現時期アイコンを曲線上に直接配置
 - キーワードラベル（重複回避 + スパイク線）
 - 凡例（右上・縦並び）
-- ドラッグ操作（フェーズ内制約）
+- ドラッグ操作（アイコンまたはテキストラベル、フェーズ内制約）
+- ホバーハイライト（アイコンリング・テキスト強調・カーソル変化）
 - インライン編集テーブル（キーワードはリアルタイム反映）
 - CSV / JSON エクスポート・インポート
 - SVG ダウンロード
@@ -99,10 +100,12 @@ App
 
 ### ドラッグ実装
 
+アイコン（`<circle>`/`<polygon>`）とキーワードラベル（`<text>`）の両方がドラッグ対象。
 SVG 要素の `onMouseDown` → `window` の `mousemove` / `mouseup` でドラッグ追跡。
 
 ```
 onMouseDown:
+  isDragging state を true に設定
   window に mousemove / mouseup リスナーを登録
 
 onMouseMove:
@@ -111,8 +114,17 @@ onMouseMove:
   position = (x - xStart) / (xEnd - xStart) として entries を更新
 
 onMouseUp:
+  isDragging state を false に設定
   window リスナーを解除
 ```
+
+### ホバーハイライト
+
+`onMouseEnter` / `onMouseLeave` で `hovered` state を管理。ホバー時の視覚変化:
+
+- アイコン背後に水色リング（`fill="#f0f4ff"`, `stroke="#93c5fd"`）を描画
+- キーワードテキストを太字・濃色（`fontWeight="600"`, `fill="#111827"`）に変更
+- カーソル: 通常 `default` → ホバー時 `grab` → ドラッグ中 `grabbing`
 
 ### インポート・エクスポート
 
@@ -129,7 +141,7 @@ onMouseUp:
 | `2to5` | `<circle fill="#4A90D9" />` |
 | `5to10` | `<circle fill="#1A3A6B" />` |
 | `gt10` | `<polygon fill="#D94A4A" />` （上向き三角形） |
-| `obsolete` | `<circle fill="none" stroke="#D94A4A" />` + 斜め2本の `<line stroke="#D94A4A" />` |
+| `obsolete` | `<circle fill="white" stroke="#D94A4A" />` + 斜め2本の `<line stroke="#D94A4A" />` |
 
 ## 未決事項
 
@@ -146,3 +158,5 @@ onMouseUp:
 | 2026-09-13 | 初版作成（設計フェーズ完了） |
 | 2026-09-13 | 初期実装完了（React + Vite + カスタム SVG） |
 | 2026-09-13 | アイコンを曲線上に直接配置、ラベル重複時のみスパイク線、凡例を右上縦並びに変更 |
+| 2026-09-13 | 曲線形状改善（ピーク位置をフェーズ中央に、陳腐化アイコン白塗り、凡例ボックス修正）|
+| 2026-09-13 | テキストラベルもドラッグ対象に追加、ホバーハイライト実装 |
