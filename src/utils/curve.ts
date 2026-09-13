@@ -34,19 +34,66 @@ function cubicBezier(
   return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3
 }
 
-// The hype cycle curve is defined as a sequence of cubic bezier segments.
-// Each segment: [x0,y0, cx1,cy1, cx2,cy2, x1,y1]
-// Peak moved to x=275 (center of peak phase 200-350); all other segments unchanged from v1.
+// Gartner-like Hype Cycle curve.
+//
+// The curve is composed of cubic Bezier segments.
+// Each segment is:
+//
+//   [x0, y0, cx1, cy1, cx2, cy2, x1, y1]
+//
+// Note:
+// - Smaller y means higher expectations.
+// - The curve is intentionally asymmetric:
+//   rapid rise, sharp decline, shallow trough, then gradual recovery.
+
 const CURVE_SEGMENTS = [
-  [30, 430,   80, 420,  160, 340,  200, 200],
-  // Rise to peak: control points scaled to compress 200-310 → 200-275
-  [200, 200,  220,  80,  245,  25,  275,  25],
-  // Drop from peak: start shifted from 310 to 275, CP1 shifted proportionally
-  [275,  25,  305,  25,  370, 180,  400, 350],
-  [400, 350,  430, 430,  490, 450,  540, 450],
-  [540, 450,  600, 420,  680, 280,  790, 230],
-  [790, 230,  840, 210,  900, 210,  970, 210],
-]
+  // 1. Innovation Trigger
+  //
+  // Starts almost flat, then gradually accelerates upward.
+  // This represents the period where initial interest begins to build,
+  // but expectations are still relatively low.
+  [30, 430,   75, 425,  125, 390,  165, 325],
+
+  // 2. Rapid rise toward the Peak of Inflated Expectations
+  //
+  // Expectations increase rapidly as attention and enthusiasm grow.
+  // The second control point is aligned horizontally with the peak,
+  // which makes the transition into the peak smooth and rounded.
+  [165, 325,  205, 245,  250,  25,  275,  25],
+
+  // 3. Peak of Inflated Expectations -> beginning of decline
+  //
+  // The first control point is horizontally aligned with the peak.
+  // Together with the previous segment, this creates a smooth,
+  // rounded peak without a visible corner.
+  //
+  // After the peak, expectations begin to fall quickly.
+  [275,  25,  300,  25,  310, 145,  350, 265],
+
+  // 4. Rapid decline into the Trough of Disillusionment
+  //
+  // Expectations continue to fall, but the rate of decline gradually
+  // slows as the curve approaches the bottom.
+  //
+  // The trough is intentionally shallower than in the earlier version,
+  // with its bottom around y=400.
+  [350, 265,  385, 360,  430, 400,  500, 400],
+
+  // 5. Trough of Disillusionment -> Slope of Enlightenment
+  //
+  // The curve stays relatively flat around the trough for a while,
+  // then begins a gradual recovery as practical understanding grows.
+  //
+  // The long, gentle transition helps distinguish this recovery
+  // from the much steeper initial hype phase.
+  [500, 400,  570, 400,  620, 330,  730, 280],
+
+  // 6. Slope of Enlightenment -> Plateau of Productivity
+  //
+  // Expectations continue to recover, but the slope gradually decreases.
+  // The curve approaches a stable plateau rather than continuing upward.
+  [730, 280,  815, 235,  900, 215,  970, 210],
+];
 
 // Find y value on the curve for a given x using linear search + interpolation
 export function getYForX(targetX: number): number {
