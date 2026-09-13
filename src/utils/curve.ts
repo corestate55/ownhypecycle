@@ -34,21 +34,24 @@ function cubicBezier(
   return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3
 }
 
-// The hype cycle curve is defined as a sequence of cubic bezier segments.
+// The hype cycle curve is defined as a sequence of G1-continuous cubic bezier segments.
 // Each segment: [x0,y0, cx1,cy1, cx2,cy2, x1,y1]
+// G1 rule: last-CP → endpoint → first-CP of next segment must be collinear.
 const CURVE_SEGMENTS = [
-  // Gentle rise through innovation trigger
-  [30, 430,   80, 420,  160, 340,  200, 200],
-  // Sharp rise to peak
-  [200, 200,  230,  80,  280,  25,  310,  25],
-  // Over peak and sharp drop
-  [310,  25,  340,  25,  370, 180,  400, 350],
-  // Trough bottom
-  [400, 350,  430, 430,  490, 450,  540, 450],
-  // Slope of enlightenment (gradual rise)
-  [540, 450,  600, 420,  680, 280,  790, 230],
-  // Plateau of productivity (flattens)
-  [790, 230,  840, 210,  900, 210,  970, 210],
+  // Innovation Trigger: gentle rise from flat start
+  [30, 440,   75, 440,  140, 320,  200, 200],
+  // Rise to peak — peak at x=275 (center of peak phase 200-350)
+  // G1 at (200,200): tangent (60,-120) → first CP = (200+60*0.3, 200-120*0.3) = (218,164)
+  [200, 200,  218, 164,  255,  20,  275,  20],
+  // Drop from peak — horizontal peak (tangent = 0) → CPs at same y=20
+  [275,  20,  295,  20,  360, 200,  400, 360],
+  // Trough — G1 at (400,360): tangent (40,160) → first CP = (400+16, 360+64) = (416,424)
+  [400, 360,  416, 424,  480, 460,  540, 455],
+  // Slope of Enlightenment — G1 at (540,455): tangent (60,-5) → first CP = (570,452)
+  // G1 at (790,220): tangent of this seg (30,-5) → next first CP = (820,215)
+  [540, 455,  570, 452,  760, 225,  790, 220],
+  // Plateau — G1 at (790,220): first CP = (820,215) collinear with (760,225)→(790,220)
+  [790, 220,  820, 215,  900, 215,  970, 215],
 ]
 
 // Find y value on the curve for a given x using linear search + interpolation
@@ -71,7 +74,7 @@ export function getYForX(targetX: number): number {
   }
 
   // Fallback: plateau y
-  return 210
+  return 215
 }
 
 // Build the SVG path string for the hype cycle curve

@@ -81,7 +81,7 @@ export function HypeCycleChart({ entries, onPositionChange, svgRef }: Props) {
       <path
         d={curvePath}
         fill="none"
-        stroke="#2563eb"
+        stroke="#374151"
         strokeWidth={2.5}
         strokeLinejoin="round"
       />

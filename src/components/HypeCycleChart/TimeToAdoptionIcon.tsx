@@ -22,7 +22,7 @@ export function TimeToAdoptionIcon({ type, size = 10 }: Props) {
     case 'obsolete':
       return (
         <g>
-          <circle r={r} fill="none" stroke="#D94A4A" strokeWidth={1.5} />
+          <circle r={r} fill="white" stroke="#D94A4A" strokeWidth={1.5} />
           <line x1={-r * 0.6} y1={-r * 0.6} x2={r * 0.6} y2={r * 0.6} stroke="#D94A4A" strokeWidth={1.5} />
           <line x1={r * 0.6} y1={-r * 0.6} x2={-r * 0.6} y2={r * 0.6} stroke="#D94A4A" strokeWidth={1.5} />
         </g>
