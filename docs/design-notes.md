@@ -16,6 +16,8 @@
 - CSV / JSON エクスポート・インポート
 - SVG ダウンロード
 - Docker マルチステージビルド
+- GitHub Pages への自動デプロイ（GitHub Actions）
+- Fork me on GitHub リボン（右上）
 
 ## アーキテクチャ
 
@@ -143,6 +145,17 @@ onMouseUp:
 | `gt10` | `<polygon fill="#D94A4A" />` （上向き三角形） |
 | `obsolete` | `<circle fill="white" stroke="#D94A4A" />` + 斜め2本の `<line stroke="#D94A4A" />` |
 
+### GitHub Pages への公開
+
+- Vite の `base` を `/ownhypecycle/`（リポジトリ名）に固定する。`index.html` のファビコン参照は `%BASE_URL%` プレースホルダーを使用し、非ルートパス配信に対応する
+- `.github/workflows/deploy.yml` が `main` push をトリガーに `npm run build` → `actions/deploy-pages` でデプロイする
+- リポジトリ側は Settings → Pages → Source を「GitHub Actions」に設定する必要がある（初回のみ手動設定）
+
+### Fork me on GitHub リボン
+
+- `src/components/GitHubRibbon.tsx` で実装。外部画像・アイコンライブラリは使わず、`rotate-45` の Tailwind ユーティリティで斜めバナーの CSS リボンを自作する
+- 画面右上に `fixed` 配置し、`App.tsx` のルート要素直下でレンダリングする
+
 ## 未決事項
 
 | # | 事項 | 優先度 | 備考 |
@@ -160,3 +173,4 @@ onMouseUp:
 | 2026-09-13 | アイコンを曲線上に直接配置、ラベル重複時のみスパイク線、凡例を右上縦並びに変更 |
 | 2026-09-13 | 曲線形状改善（ピーク位置をフェーズ中央に、陳腐化アイコン白塗り、凡例ボックス修正）|
 | 2026-09-13 | テキストラベルもドラッグ対象に追加、ホバーハイライト実装 |
+| 2026-09-26 | GitHub Pages への自動デプロイ設定、Fork me on GitHub リボン追加 |

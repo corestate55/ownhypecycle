@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { HypeCycleChart } from './components/HypeCycleChart'
 import { DataTable } from './components/DataTable'
 import { TableToolbar } from './components/TableToolbar'
+import { GitHubRibbon } from './components/GitHubRibbon'
 import { exportSVG } from './utils/io'
 import type { Entry } from './types'
 
@@ -58,8 +59,9 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen bg-white">
+      <GitHubRibbon />
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white shrink-0">
+      <header className="flex items-center justify-between pl-4 pr-32 py-2 border-b border-gray-200 bg-white shrink-0">
         <h1 className="text-lg font-bold text-gray-800">OwnHypeCycle</h1>
         <button
           onClick={handleExportSVG}
