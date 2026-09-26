@@ -11,6 +11,10 @@
 
 ---
 
+🌐 **公開中**: https://corestate55.github.io/ownhypecycle/
+
+---
+
 ## できること
 
 | 機能 | 説明 |
@@ -109,6 +113,25 @@ docker run -p 3000:80 ownhypecycle
 npm run build    # プロダクションビルド（型チェック付き）
 npm run preview  # ビルド成果物のローカルプレビュー
 ```
+
+---
+
+## GitHub Pages への公開
+
+`main` ブランチへの push をトリガーに、GitHub Actions（[.github/workflows/deploy.yml](.github/workflows/deploy.yml)）が自動で以下を行う。
+
+1. `npm ci && npm run build`
+2. `dist/` を GitHub Pages にデプロイ
+
+公開後は https://corestate55.github.io/ownhypecycle/ でアクセスできる。
+
+### 初回のリポジトリ設定
+
+1. GitHub リポジトリの **Settings → Pages** を開く
+2. **Build and deployment → Source** を **GitHub Actions** に設定する
+3. `main` ブランチに push する（または Actions タブから `Deploy to GitHub Pages` ワークフローを手動実行する）
+
+以降は `main` への push のたびに自動で再デプロイされる。
 
 ---
 
